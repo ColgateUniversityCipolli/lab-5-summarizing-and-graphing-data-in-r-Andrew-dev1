@@ -27,7 +27,6 @@ allentown <- read_csv("data/essentia.data.allentown.csv")
 analysis <- function(feature){
   #isolate feature value from allentown song
   variable <- get(feature, allentown)
-
   
   data <- training.csv %>%
     # group together artists 
@@ -49,9 +48,6 @@ analysis <- function(feature){
   
   newRow <- data %>%
     mutate(feature = feature)
-    # select(artist,description) %>%
-    # mutate(feature = feature)  %>%
-    # pivot_wider(values_from = "description", names_from = "artist")
   
   return(newRow)
 }
@@ -63,6 +59,9 @@ good.columns <- colnames(select_if(training.csv, is.numeric))
 good.columns <- good.columns[-82] 
 processed.data <- good.columns[1:196] %>%
   map_dfr(analysis)
+
+#writing to a csv to use in sweave doc
+write_csv(processed.data, file = "processed data.csv")
 
 # making side by side bar plots Step 4
 # calculating out all of the features within range 
@@ -90,7 +89,7 @@ chords_scale
 #calculate the proportion of songs with the same scale 
 dat.chords.scale <- training.csv |>
   group_by(artist) |>
-  summarise(total = length(get("chords_scale")), count = length(grep("major",get("chords_scale")))) |>
+  summarise(total = n(), count = length(grep("major",get("chords_scale")))) |>
   mutate(proportion = count/total) 
 
 # create a bar plot 

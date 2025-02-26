@@ -24,11 +24,11 @@
 \begin{document}
 
 \vspace{-1in}
-\title{Lab 02 -- MATH 240 -- Computational Statistics}
+\title{Lab 05 -- MATH 240 -- Computational Statistics}
 
 \author{
   Andrew Li \\
-  Affiliation  \\
+  Colgate University  \\
   Department of Mathematics  \\
   {\tt ali@colgate.edu}
 }
@@ -39,7 +39,7 @@
 
 \begin{multicols}{2}
 \begin{abstract}
-This experiment seek to analyze how big of an influence did different music groups have on songs, specifically how much did the bands Manchester Orchestra, The Front Bottoms, and All Get Out affect the song ``Allentown." By using Essentia \citep{bogdanov2013essentia}, an open-source program for music analysis and synthesis, the musical components of 180 songs were isolated to be compared with the parts of \texttt{Allentown}. This method would be give more depth into the analysis and provide a better understanding of what elements are extracted from music. Through this process, the steps of data cleaning and summarization will be explored.  
+This experiment seek to analyze how big of an influence did different music groups have on songs, specifically how much did the bands Manchester Orchestra, The Front Bottoms, and All Get Out affect the song ``Allentown." By using Essentia \citep{bogdanov2013essentia}, an open-source program for music analysis and synthesis, the musical components of 180 songs were isolated to be compared with the parts of ``Allentown." This method would be give more depth into the analysis and provide a better understanding of what elements are extracted from music. Through this process, the steps of data cleaning and summarization will be explored.  
 
 \end{abstract}
 
@@ -54,15 +54,17 @@ Music plays such an important role in everyday lives, from creating social space
 \section{Methods}
 To replicate this experiment, it is important to make sure to download the jsonlite and stringr \texttt{R} packages. The music directory contained all 181 of the song tracks from the three bands, and we created a program that extracted all the provided .wav files (musical files) and processed them to create the batch file of executable command lines for the Essentia program to run. Using the \texttt{stringr} \citep{st} package for R , we were able to extract information from each wave file and organize each line by artist and album. Following that, we used the \texttt{jsonlite} \citep{js} package to create a sample program that can pull information from the json files that Essentia would return. This preliminary step showed how the larger scale data extraction will work. \\
 \indent To get a full picture on which band plays the most influence, we took the data from the Essentia processed calls, drew additional features such as mood from Essentia models \citep{alonso2020tensorflow}, and analyzed thoughts and personality traits through a text analysis tool called LIWC. This was all compiled into one \texttt{csv} file to sort and organize all of our data before we initiated a feature-by-feature comparison to see what insights we can draw about the rise of the song ``Allentown." \\
-\indent Using boxplots, a sample analysis was shown for the emotional element and tone for ``Allentown" compared to the tracks from the three bands. 
+\indent Using boxplots, a sample analysis was shown for the emotional element for ``Allentown" compared to the tracks from the three bands. 
 
-Using the tidyverse package for \texttt{R} \citep{tidyverse}, it became easier to summerize and visualize our data because of the extensive functionality built into the package. 
+Using the tidyverse package for \texttt{R} \citep{tidyverse}, it became easier to summerize and visualize our data because of the extensive functionality built into the package. Comparing individual values would have taken a large amount of space, lots of time, and difficulty to read, so to get a full analysis, we took all of the musical features, compared if the values of each feature from ``Allentown" are similar to  those from each artist, and graphed the proportion of songs that have similar traits in Figure \ref{plot3}. Using the \texttt{xtable} package \citep{xtable}, a sample of some of the analytical work is shown in Table \ref{table1} before. The total mark of 1.00 would have meant that musical features of the artist's songs were not identical, but all very similar in style. 
 
 
 
 \section{Results}
-Currently, it is hard to determine what band had a greater influence on the song ``Allentown." By collecting analyzed musical elements and processed components, it becomes possible to see what parts of the song are similar to the works of \textit{Manchester Orchestra}, \textit{All Get Out}, or \textit{The Front Bottoms}. The final product from the data collection and cleaning is presented inside the trainingdata.csv file while the musical components for ``Allentown" is separated inside the testingdata.csv to avoid conflicting overlap.
-\newpage
+Initially, it waas hard to determine what band had a greater influence on the song ``Allentown." By collecting analyzed musical elements and processed components, it becomes possible to see what parts of the song are similar to the works of Manchester Orchestra, All Get Out, or The Front Bottoms. The final product from the data collection and cleaning is presented inside the trainingdata.csv file while the musical components for ``Allentown" is separated inside the testingdata.csv to avoid conflicting overlap. 
+  
+When looking at just the emotional aspect of the songs by the three bands in Figure \ref{plot1}, the dashed line represents the value of the emotional aspect of ``Allentown," and comparing just this value would point to Manchester Orchestra as the main contributor since the song is within its IQR while being in the lower quartile for All Get Out and The Front Bottoms. However, when comparing the chords scale in Figure \ref{plot2}, more songs from The Front Bottoms share similar chords as ``Allentown," so instead, Figure \ref{plot3} showed the comparison for all traits . It can be determined that Manchester Orchestra has played the most influence on the creation of Allentown because it has a noticeable amount of similar traits in their music. While the songs were not exactly the same (1.00 being the maximum similarity), Manchester Orchestra's works is 10 percent greater than those of All Get Out and The Front Bottoms.
+
 
 <<plot1, eval = FALSE, echo =FALSE, size='scriptsize', message=FALSE>>=
 library(tidyverse)
@@ -106,9 +108,72 @@ ggplot(combined_data) +
 \end{figure}
 
 
+<<plot2, eval = FALSE, echo =FALSE, size='scriptsize', message=FALSE>>=
+library(tidyverse)
+training.csv <- read_csv("data/essentia.data.csv") 
+
+dat.chords.scale <- training.csv %>%
+  group_by(artist) %>%
+  summarise(total = n(), count = sum(grepl("major", chords_scale))) %>%
+  mutate(proportion = count/total) 
+# create a bar plot 
+ggplot(data=dat.chords.scale)+
+  geom_col(aes(x=artist, y = proportion, fill=artist),    
+           position = position_dodge(.5)) + 
+  geom_hline(yintercept = 0)+
+  xlab("")+                        
+  ylab("Chords scale proportion")+
+  ylim(0,1)+                          
+  theme_bw()+
+  theme(axis.text.x=element_blank(), #remove x axis labels
+        axis.ticks.x=element_blank(), #remove x axis ticks
+        )
+@
+
+\begin{figure}[H]
+\begin{center}
+<<echo=FALSE, warning=FALSE, message=FALSE, fig.dim=c(5,3.5)>>=
+<<plot2>>
+@
+\caption{Songs similarity analysis based on chords scale }
+\label{plot2} 
+\end{center}
+\end{figure}
+
+<<plot3, eval = FALSE, echo =FALSE, size='scriptsize', message=FALSE>>=
+
+#read processed data and pulled out all similarities
+processed.data <- read_csv(file = "processed data.csv")
+bar.data <- processed.data %>%
+  group_by(artist) %>%
+  summarise(proportion = length(which(description == "Within Range"))/ n())
+
+ggplot(data=bar.data)+
+  geom_col(aes(x=artist, y = proportion, fill=artist),    
+           position = position_dodge(.5)) + 
+  geom_hline(yintercept = 0)+
+  xlab("")+                        
+  ylab("Proportion of features within range")+
+  ylim(0,1)+                          
+  theme_bw()+
+  theme(axis.text.x=element_blank(), #remove x axis labels
+        axis.ticks.x=element_blank(), #remove x axis ticks
+        )
+@
+
+\begin{figure}[H]
+\begin{center}
+<<echo=FALSE, warning=FALSE, message=FALSE, fig.dim=c(5,3.5)>>=
+<<plot3>>
+@
+\caption{Songs similarity analysis based on total features}
+\label{plot3} 
+\end{center}
+\end{figure}
+
 
 \section{Discussion}
-  Given the sample analysis, a fair guess would be that The Front Bottoms has a bigger influence based on Figure 1 since the IQR is higher up; however, if the guess is based on figure 2, then Manchester Orchestra would have more influence since its range is the lowest of the three bands and the emotion value for ``Allentown" sits right inside the IQR for Manchester Orchestra. However, more analysis would be needed to infer any direct correlation. 
+  Given Figure \ref{plot1} and Figure \ref{plot2}, it can be seen how individual musical feature comparison gives an insufficient amount of information to determine which band had the greatest influence on the song ``Allentown." After extracting wav files and creating additional analyzing additional features from them through Essentia models and LIWC, the final cummulative processing of data cleaning formed Figure \ref{plot3} which shows how Manchester Orchestra contribued the most to the creation of the song. This type of analysis can be used to further determine the influence of other musicians on the works on any of these three bands or attribute similarities between different songs.
 
 
 
@@ -117,12 +182,15 @@ ggplot(combined_data) +
 % Bibliography
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \vspace{2em}
-
-
 \begin{tiny}
 \bibliography{bib}
 \end{tiny}
 \end{multicols}
+\newpage
+
+
+
+\section{Appendix}
 
 \begin{table}[H]
 \centering
@@ -154,30 +222,9 @@ ggplot(combined_data) +
   22 & All Get Out & 2620015.25 & 3162397.09 & 4788882.53 & 4758639.50 & TRUE & TRUE & Out of Range \\ 
   23 & Manchester Orchestra & 1937052.25 & 1668651.00 & 4817223.00 & 5845988.50 & FALSE & TRUE & Unusual \\ 
   24 & The Front Bottoms & 3510343.75 & 3538674.50 & 5508843.50 & 5888673.00 & FALSE & FALSE & Within Range \\ 
-  25 & All Get Out & 1.14 & 0.81 & 2.01 & 4.12 & FALSE & TRUE & Unusual \\ 
-  26 & Manchester Orchestra & 1.16 & -0.49 & 3.70 & 6.75 & FALSE & FALSE & Within Range \\ 
-  27 & The Front Bottoms & 0.87 & 0.63 & 1.96 & 2.04 & TRUE & TRUE & Out of Range \\ 
-  28 & All Get Out & 935.91 & 701.91 & 2250.95 & 2520.04 & TRUE & TRUE & Out of Range \\ 
-  29 & Manchester Orchestra & 518.87 & 151.27 & 1600.19 & 2566.67 & FALSE & FALSE & Within Range \\ 
-  30 & The Front Bottoms & 927.04 & 740.58 & 2001.24 & 3190.29 & TRUE & TRUE & Out of Range \\ 
-  31 & All Get Out & 0.00 & 0.00 & 0.01 & 0.01 & FALSE & FALSE & Within Range \\ 
-  32 & Manchester Orchestra & 0.00 & 0.00 & 0.01 & 0.01 & FALSE & FALSE & Within Range \\ 
-  33 & The Front Bottoms & 0.00 & 0.00 & 0.01 & 0.01 & FALSE & FALSE & Within Range \\ 
-  34 & All Get Out & 3.03 & -0.36 & 8.83 & 40.10 & FALSE & TRUE & Unusual \\ 
-  35 & Manchester Orchestra & 3.36 & -13.58 & 26.13 & 98.58 & FALSE & TRUE & Unusual \\ 
-  36 & The Front Bottoms & 1.89 & 0.00 & 7.16 & 10.47 & TRUE & TRUE & Out of Range \\ 
-  37 & All Get Out & 0.04 & 0.05 & 0.10 & 0.10 & FALSE & FALSE & Within Range \\ 
-  38 & Manchester Orchestra & 0.02 & 0.01 & 0.10 & 0.11 & FALSE & FALSE & Within Range \\ 
-  39 & The Front Bottoms & 0.07 & 0.06 & 0.11 & 0.12 & FALSE & FALSE & Within Range \\ 
-  40 & All Get Out & 6.44 & 7.00 & 7.91 & 7.91 & FALSE & TRUE & Unusual \\ 
-  41 & Manchester Orchestra & 5.79 & 5.22 & 7.98 & 7.89 & FALSE & FALSE & Within Range \\ 
-  42 & The Front Bottoms & 7.11 & 7.10 & 7.85 & 8.02 & TRUE & TRUE & Out of Range \\ 
-  43 & All Get Out & 0.01 & 0.00 & 0.01 & 0.02 & FALSE & TRUE & Unusual \\ 
-  44 & Manchester Orchestra & 0.00 & 0.00 & 0.02 & 0.02 & FALSE & FALSE & Within Range \\ 
-  45 & The Front Bottoms & 0.01 & 0.00 & 0.02 & 0.02 & FALSE & FALSE & Within Range \\ 
-
+   
    \hline
-\end{tabular}
+\end{tabular} \caption{Sample data from musical analysis} \label{table1}
 \end{table}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
